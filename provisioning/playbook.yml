@@ -1,0 +1,39 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: ensure rubygems is at the latest version
+      package:
+        name: rubygems
+        state: latest
+    - name: install sinatra
+      shell: gem install sinatra
+    - name: install webapp script daemon linked to /vagrant/scripts/webapp
+      file:
+        src: /vagrant/scripts/webapp
+        dest: /etc/init.d/webapp
+        owner: root
+        group: root
+        state: link
+    - name: enable and run webapp script
+      service:
+        name: webapp
+        pattern: /etc/init.d/webapp
+        enabled: yes
+        state: started
+    - name: ensure bsd-mailx is installed at the latest version
+      package:
+        name: bsd-mailx
+        state: latest
+    - name: install monit webapp script linked to /vagrant/scripts/monit-webapp.sh
+      file:
+        src: /vagrant/scripts/monit-webapp.sh
+        dest: /usr/local/bin/monit-webapp.sh
+        owner: root
+        group: root
+        state: link
+    - name: install the crontab entry to the monitoring script 
+      cron:
+        name: monit-webapp 
+        user: root
+        job: "/usr/local/bin/monit-webapp.sh"

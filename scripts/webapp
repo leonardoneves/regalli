@@ -1,0 +1,57 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          webapp
+# Default-Start:     2 3 4 5
+# Default-Stop:      
+# Required-Start:    $local_fs $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Short-Description: webapp
+# Description:       webapp
+### END INIT INFO
+
+set -e
+
+# /etc/init.d/rsync: start and stop the rsync daemon
+
+RACKUP=/usr/local/bin/rackup
+
+test -x $DAEMON || exit 0
+
+#. /lib/lsb/init-functions
+
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin:/usr/local/bin"
+
+start() {
+	cd /vagrant/app
+	nohup ${RACKUP} >/dev/null 2>&1 &
+} 
+
+stop() {
+	ps -ef | grep rackup  | grep -v grep | awk '{print $2}' | xargs kill -9
+}
+
+status() {
+	ps -ef | grep rackup  | grep -v grep
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart)
+	stop
+	start
+	;;
+  status)
+	status
+	;;
+  *)
+	echo "Usage: /etc/init.d/webapp {start|stop|restart|status}"
+	exit 1
+esac
+
+exit 0
